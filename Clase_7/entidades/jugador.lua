@@ -1,6 +1,10 @@
 local Class  = require "libs.hump.class"
+local Bala = require "entidades.bala"
+local eliminar = require "entidades.eliminar"
 
-local jugador = Class{}
+local jugador = Class{
+	__includes = {eliminar}
+}
 
 function jugador:init(entidad,x,y)
 	self.entidad = entidad
@@ -32,6 +36,25 @@ function jugador:init(entidad,x,y)
 	self.shape = love.physics.newPolygonShape(poligono)
 
 	self.fixture = love.physics.newFixture(self.body, self.shape)
+	self.fixture:setUserData( {data="personajes", pos=1, obj=self} )
+
+	--creando puntos de cañon
+
+	self.puntos = {}
+
+	self.puntos[1]={}
+	self.puntos[1].shape = love.physics.newCircleShape(25,15,5)
+	self.puntos[1].fixture = love.physics.newFixture(self.body, self.puntos[1].shape)
+	self.puntos[1].fixture:setSensor(true)
+	self.puntos[1].fixture:setUserData( {data="puntos", pos=5} )
+	self.puntos[1].radio = math.rad(-15)
+
+	self.puntos[2]={}
+	self.puntos[2].shape = love.physics.newCircleShape(-25,15,5)
+	self.puntos[2].fixture = love.physics.newFixture(self.body, self.puntos[2].shape)
+	self.puntos[2].fixture:setSensor(true)
+	self.puntos[2].fixture:setUserData( {data="puntos", pos=5} )
+	self.puntos[2].radio = math.rad(15)
 
 	self.body:setMass( 0 )
 	self.body:setInertia( 0 )
@@ -41,14 +64,26 @@ function jugador:init(entidad,x,y)
 	self.body:setLinearDamping(5)
 
 	self.body:setAngle(0)
+
 	
-	self.velocidad = 200
+	self.velocidad = 500
 
 	--estados
 
-	self.movimiento = {avanzar = false, retrocediendo = false}
+	self.movimiento = {moverse = false}
 	self.estado = {disparando = false}
 
+	--contador
+
+	self.tiempo_disparando = 1
+	self.max_tiempo_disparando = 1
+
+	--diferenciar player enemigo
+
+	self.creador = 1
+	self.fixture:setGroupIndex(-self.creador)
+
+	eliminar.init(self,"jugadores")
 
 end
 
@@ -60,35 +95,35 @@ end
 
 function jugador:update(dt)
 
-	local direccion = 0
+	self:get_radio()
 
-	if self.movimiento.retrocediendo then
-		direccion = 1
-	elseif self.movimiento.avanzando then
-		direccion = -1
+	if self.movimiento.moverse then
+		self:moverse(dt)
 	end
 
-	if direccion ~= 0 then
-		self:moverse(direccion,dt)
+	if self.estado.disparando then
+		self.tiempo_disparando=self.tiempo_disparando+dt
+
+		if self.tiempo_disparando>self.max_tiempo_disparando then
+
+		 	self:crear_balas()
+
+			self.tiempo_disparando=0
+		end
 	end
 
 	self.ox,self.oy=self.body:getX(),self.body:getY()
 end
 
 function jugador:keypressed(key)
-	if key == "a" or key == "w" then
-		self.movimiento.retrocediendo = true
-	elseif key  == "d" or key == "s" then
-		self.movimiento.avanzando = true
+	if key=="space" then
+		self.movimiento.moverse=true
 	end
-
 end
 
 function jugador:keyreleased(key)
-	if key == "a" or key == "w" then
-		self.movimiento.retrocediendo = false
-	elseif key  == "d" or key == "s" then
-		self.movimiento.avanzando = false
+	if key=="space" then
+		self.movimiento.moverse=false
 	end
 end
 
@@ -101,12 +136,13 @@ end
 function jugador:mousereleased(x,y,button)
 	if button == 1 then
 		self.estado.disparando=false
+		self.tiempo_disparando=self.max_tiempo_disparando 
 	end
 end
 
 
-function jugador:moverse(direccion,dt)
-	local radio = self.radio-math.pi/2
+function jugador:moverse(dt)
+	local radio = self.radio+math.pi/2
 
 	local x,y = math.cos(radio), math.sin(radio)
 
@@ -116,7 +152,26 @@ function jugador:moverse(direccion,dt)
 
 
 	if vx<self.velocidad or vy<self.velocidad then
-		self.body:applyLinearImpulse(mx,my*direccion)
+		self.body:applyLinearImpulse(mx,my)
+	end
+end
+
+function jugador:get_radio()
+	local rx,ry = self.entidad:getxy()
+
+	local radio =  math.atan2( ry-self.oy, rx -self.ox)
+	self.radio = radio -math.pi/2
+
+	self.body:setAngle(self.radio)
+end
+
+function jugador:crear_balas()
+
+	for _, punto in ipairs(self.puntos) do
+		local shape = punto.fixture:getShape()
+		local px,py = self.body:getWorldPoints(shape:getPoint())
+
+		Bala(self.entidad,px,py,self.radio+punto.radio,self.creador)
 	end
 end
 

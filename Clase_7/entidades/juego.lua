@@ -1,5 +1,7 @@
 local Class  = require "libs.hump.class"
 local sti = require "libs.sti.sti"
+local gamera = require "libs.gamera.gamera"
+
 local jugador = require "entidades.jugador"
 
 local juego ={}
@@ -20,9 +22,19 @@ function juego:enter()
 	self.world = love.physics.newWorld( 0, 0, true )
 
 	self.map = sti("assets/mapas/mapa.lua")
+
+	local x,y=love.graphics.getDimensions( )
+
+	self.map:resize(x,y)
+	self.cam = gamera.new(0,0,self.map.width*self.map.tilewidth, self.map.height*self.map.tileheight)
+  
+	self.cam:setWindow(0,0,x,y)
+
+	self.world:setCallbacks(self:callbacks())
+
+	
 	self:leer_mapa()
 	self:crear_capas()
-
 
 
 end
@@ -30,11 +42,21 @@ end
 function juego:update(dt)
 	self.world:update(dt)
 	self.map:update(dt)
+
+	if self.gameobject.jugadores[1] then
+		local player = self.gameobject.jugadores[1]
+		self.cam:setPosition(player.ox, player.oy)
+	end
 end
 
 function juego:draw()
-	self.map:draw()
-	draw_fisicas(self.world)
+	local cx,cy,cw,ch=self.cam:getVisible()
+  	self.map:draw(-cx,-cy,1,1)
+
+  	self.cam:draw(function(l,t,w,h)
+ 		draw_fisicas(self.world)
+	end)
+		
 end
 
 function juego:keypressed(key)
@@ -137,13 +159,13 @@ function juego:crear_capas()
 	--update
 
 	Balas_layers.update = function(obj,dt)
-		for _,object_data in ipairs(self.gameobject.jugadores) do
+		for _,object_data in ipairs(self.gameobject.balas) do
 			object_data:update(dt)
 		end
 	end
 
 	Enemigos_layers.update = function(obj,dt)
-		for _,object_data in ipairs(self.gameobject.jugadores) do
+		for _,object_data in ipairs(self.gameobject.enemigos) do
 			object_data:update(dt)
 		end
 	end
@@ -177,7 +199,72 @@ function juego:crear_paredes(lista)
 		local shape=love.physics.newRectangleShape(x+w/2,y+h/2,w,h)
 		local fixture=love.physics.newFixture(self.body,shape)
 
+		fixture:setUserData( {data="solido", pos=4} )
+
 	end
+
+
+end
+
+function juego:getxy()
+	local cx,cy = self.cam:toWorld(love.mouse.getX(),love.mouse.getY())
+	return cx,cy
+end
+
+function juego:callbacks()
+
+	local beginContact =  function(a, b, coll)
+
+		local obj1=nil
+ 		local obj2=nil
+
+		local o1,o2=a:getUserData(),b:getUserData()
+
+		if o1.pos<o2.pos then
+			obj1=o1
+			obj2=o2
+		else
+			obj1=o2
+			obj2=o1
+		end
+
+ 		local x,y=coll:getNormal()
+
+ 		if obj1.data == "balas" and obj2.data == "solido" then
+ 			obj1.obj:remover()
+ 		end
+
+
+ 	end
+  
+	local endContact =  function(a, b, coll)
+		local obj1=nil
+		local obj2=nil
+
+		local o1,o2=a:getUserData(),b:getUserData()
+	  
+	if o1.pos<o2.pos then
+			obj1=o1
+			obj2=o2
+		else
+			obj1=o2
+			obj2=o1
+		end
+
+	local x,y=coll:getNormal()
+
+
+	end
+  
+	local preSolve =  function(a, b, coll)
+	    
+	end
+  
+  	local postSolve =  function(a, b, coll, normalimpulse, tangentimpulse)
+
+	end
+
+	return beginContact,endContact,preSolve,postSolve
 end
 
 return juego

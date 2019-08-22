@@ -46,7 +46,7 @@ function jugador:init(entidad,x,y)
 
 	--estados
 
-	self.movimiento = {avanzar = false, retrocediendo = false}
+	self.movimiento = {moverse = false}
 	self.estado = {disparando = false}
 
 
@@ -60,35 +60,22 @@ end
 
 function jugador:update(dt)
 
-	local direccion = 0
-
-	if self.movimiento.retrocediendo then
-		direccion = 1
-	elseif self.movimiento.avanzando then
-		direccion = -1
-	end
-
-	if direccion ~= 0 then
-		self:moverse(direccion,dt)
+	if self.movimiento.moverse then
+		self:moverse(dt)
 	end
 
 	self.ox,self.oy=self.body:getX(),self.body:getY()
 end
 
 function jugador:keypressed(key)
-	if key == "a" or key == "w" then
-		self.movimiento.retrocediendo = true
-	elseif key  == "d" or key == "s" then
-		self.movimiento.avanzando = true
+	if key=="space" then
+		self.movimiento.moverse=true
 	end
-
 end
 
 function jugador:keyreleased(key)
-	if key == "a" or key == "w" then
-		self.movimiento.retrocediendo = false
-	elseif key  == "d" or key == "s" then
-		self.movimiento.avanzando = false
+	if key=="space" then
+		self.movimiento.moverse=false
 	end
 end
 
@@ -105,8 +92,8 @@ function jugador:mousereleased(x,y,button)
 end
 
 
-function jugador:moverse(direccion,dt)
-	local radio = self.radio-math.pi/2
+function jugador:moverse(dt)
+	local radio = self.radio+math.pi/2
 
 	local x,y = math.cos(radio), math.sin(radio)
 
@@ -116,7 +103,7 @@ function jugador:moverse(direccion,dt)
 
 
 	if vx<self.velocidad or vy<self.velocidad then
-		self.body:applyLinearImpulse(mx,my*direccion)
+		self.body:applyLinearImpulse(mx,my)
 	end
 end
 

@@ -137,13 +137,13 @@ function juego:crear_capas()
 	--update
 
 	Balas_layers.update = function(obj,dt)
-		for _,object_data in ipairs(self.gameobject.jugadores) do
+		for _,object_data in ipairs(self.gameobject.balas) do
 			object_data:update(dt)
 		end
 	end
 
 	Enemigos_layers.update = function(obj,dt)
-		for _,object_data in ipairs(self.gameobject.jugadores) do
+		for _,object_data in ipairs(self.gameobject.enemigos) do
 			object_data:update(dt)
 		end
 	end
