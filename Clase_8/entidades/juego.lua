@@ -3,6 +3,7 @@ local sti = require "libs.sti.sti"
 local gamera = require "libs.gamera.gamera"
 
 local jugador = require "entidades.jugador"
+local enemigo = require "entidades.enemigo"
 
 local juego ={}
 
@@ -36,7 +37,9 @@ function juego:enter()
 	self:leer_mapa()
 	self:crear_capas()
 
+	self:cerrar_mapa()
 
+	enemigo(self,500,500)
 end
 
 function juego:update(dt)
@@ -265,6 +268,17 @@ function juego:callbacks()
 	end
 
 	return beginContact,endContact,preSolve,postSolve
+end
+
+function juego:cerrar_mapa()
+  local w,h=self.map.width*self.map.tilewidth, self.map.height*self.map.tileheight
+  local cerca = {}
+  cerca.body=love.physics.newBody(self.world,0,0,"static")
+  cerca.shape=love.physics.newChainShape(true,0,0,w,0,h,w,0,h)
+  cerca.fixture=love.physics.newFixture(cerca.body,cerca.shape)
+  
+  cerca.fixture:setUserData( {data="solido", pos=4} )
+
 end
 
 return juego

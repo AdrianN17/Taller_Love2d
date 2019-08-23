@@ -65,7 +65,10 @@ function jugador:init(entidad,x,y)
 
 	self.body:setAngle(0)
 
-	
+
+	--estadisticas
+
+	self.hp=5
 	self.velocidad = 500
 
 	--estados
@@ -84,7 +87,6 @@ function jugador:init(entidad,x,y)
 	self.fixture:setGroupIndex(-self.creador)
 
 	eliminar.init(self,"jugadores")
-
 end
 
 function jugador:draw()
