@@ -235,6 +235,15 @@ function juego:callbacks()
 
  		if obj1.data == "balas" and obj2.data == "solido" then
  			obj1.obj:remover()
+ 		elseif (obj1.data == "enemigos" or obj1.data=="personajes") and obj2.data == "balas" then
+ 			--receptor dano
+ 			self:dano(obj1.obj,1)
+ 			obj2.obj:remover()
+ 		elseif obj1.data == "personajes" and obj2.data=="enemigos_vision" then
+ 			obj2.obj.estados:atacando()
+ 			obj2.obj.blanco = obj1.obj
+ 		elseif obj1.data == "enemigos" and obj2.data == "solido" then
+ 			obj1.obj.toco_pared=true
  		end
 
 
@@ -254,8 +263,12 @@ function juego:callbacks()
 			obj2=o1
 		end
 
-	local x,y=coll:getNormal()
+		local x,y=coll:getNormal()
 
+		if obj1.data == "personajes" and obj2.data=="enemigos_vision" then
+			obj2.obj.estados:buscando()
+			obj2.obj.blanco = nil
+		end
 
 	end
   
@@ -279,6 +292,10 @@ function juego:cerrar_mapa()
   
   cerca.fixture:setUserData( {data="solido", pos=4} )
 
+end
+
+function juego:dano(obj,dano)
+	obj.hp=obj.hp-dano
 end
 
 return juego

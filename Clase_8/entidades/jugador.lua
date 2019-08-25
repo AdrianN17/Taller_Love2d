@@ -70,13 +70,14 @@ function jugador:init(entidad,x,y)
 
 	self.hp=5
 	self.velocidad = 500
+	self.hp = 5
 
 	--estados
 
 	self.movimiento = {moverse = false}
 	self.estado = {disparando = false}
 
-	--contador
+	--contador balas
 
 	self.tiempo_disparando = 1
 	self.max_tiempo_disparando = 1
@@ -115,6 +116,10 @@ function jugador:update(dt)
 	end
 
 	self.ox,self.oy=self.body:getX(),self.body:getY()
+
+	if self.hp<1 then
+        self:remover()
+    end
 end
 
 function jugador:keypressed(key)
