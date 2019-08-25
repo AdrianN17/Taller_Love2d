@@ -235,7 +235,11 @@ function juego:callbacks()
 
  		if obj1.data == "balas" and obj2.data == "solido" then
  			obj1.obj:remover()
- 		elseif (obj1.data == "enemigos" or obj1.data=="personajes") and obj2.data == "balas" then
+ 		elseif obj1.data == "enemigos" and obj2.data == "balas" then
+ 			--receptor dano
+ 			self:dano(obj1.obj,1)
+ 			obj2.obj:remover()
+ 		elseif obj1.data=="personajes" and obj2.data == "balas" then
  			--receptor dano
  			self:dano(obj1.obj,1)
  			obj2.obj:remover()
