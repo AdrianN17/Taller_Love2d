@@ -132,8 +132,6 @@ function enemigo:update(dt)
 
 		if self.tiempo_disparando>self.max_tiempo_disparando then
 
-			
-
 		 	self:crear_balas()
 
 			self.tiempo_disparando=0

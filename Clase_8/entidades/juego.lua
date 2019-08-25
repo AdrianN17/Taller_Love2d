@@ -39,7 +39,9 @@ function juego:enter()
 
 	self:cerrar_mapa()
 
-	enemigo(self,500,500)
+	self.contador_enemigos=0
+	self.max_contador_enemigos=5
+
 end
 
 function juego:update(dt)
@@ -49,6 +51,14 @@ function juego:update(dt)
 	if self.gameobject.jugadores[1] then
 		local player = self.gameobject.jugadores[1]
 		self.cam:setPosition(player.ox, player.oy)
+	end
+
+	self.contador_enemigos=self.contador_enemigos+dt
+
+	if self.contador_enemigos> self.max_contador_enemigos then
+		enemigo(self,750,love.math.random(1,9)*100)
+
+		self.contador_enemigos=0
 	end
 end
 
