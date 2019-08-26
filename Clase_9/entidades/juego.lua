@@ -5,9 +5,16 @@ local gamera = require "libs.gamera.gamera"
 local jugador = require "entidades.jugador"
 local enemigo = require "entidades.enemigo"
 
+local pausa = require "escenas.pausa"
+
+local serialize = require "libs.ser.ser"
+
 local juego ={}
 
 function juego:init()
+
+	self.sprites_todos = require "assets.img.img"
+	self.sonidos_todos = require "assets.sound.sound"
 
 end
 
@@ -17,7 +24,7 @@ function juego:enter()
 	self.gameobject.enemigos={}
 	self.gameobject.balas={}
 
-	self.sprites_todos = require "assets.img.img"
+	
 
 
 	self.world = love.physics.newWorld( 0, 0, true )
@@ -42,6 +49,14 @@ function juego:enter()
 	self.contador_enemigos=0
 	self.max_contador_enemigos=5
 
+
+	--sonido 
+
+	self.sonidos_todos.fondo:play()
+
+	--score
+
+	self.score=0
 end
 
 function juego:update(dt)
@@ -66,15 +81,26 @@ function juego:draw()
 	local cx,cy,cw,ch=self.cam:getVisible()
   	self.map:draw(-cx,-cy,1,1)
 
-  	self.cam:draw(function(l,t,w,h)
+  	--[[self.cam:draw(function(l,t,w,h)
  		draw_fisicas(self.world)
-	end)
-		
+	end)]]
+
+	love.graphics.print("Mi score : " .. self.score,650,10)
+
 end
 
 function juego:keypressed(key)
 	if self.gameobject.jugadores[1] then
 		self.gameobject.jugadores[1]:keypressed(key)
+
+		if key=="p" then
+			Gamestate.push(pausa)
+		end
+	else
+		if key=="return" then
+			self:limpiar()
+			Gamestate.switch(menu)
+		end
 	end
 end
 
@@ -249,6 +275,7 @@ function juego:callbacks()
  			--receptor dano
  			self:dano(obj1.obj,1)
  			obj2.obj:remover()
+ 			
  		elseif obj1.data=="personajes" and obj2.data == "balas" then
  			--receptor dano
  			self:dano(obj1.obj,1)
@@ -311,5 +338,24 @@ end
 function juego:dano(obj,dano)
 	obj.hp=obj.hp-dano
 end
+
+function juego:limpiar()
+	self.score=0
+	self.sonidos_todos.fondo:stop()
+
+	self.gameobject={}
+	self.world:destroy()
+end
+
+function juego:guardar_score()
+	if love.filesystem.getInfo("score.lua") then
+		local old_data=love.filesystem.load("score.lua")()
+
+		if old_data.score<self.score then
+			love.filesystem.write("score.lua",serialize({score=self.score}))
+		end
+	end
+end
+
 
 return juego

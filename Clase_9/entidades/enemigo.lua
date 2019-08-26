@@ -82,10 +82,6 @@ function enemigo:init(entidad,x,y)
 	self.tiempo_disparando = 1
 	self.max_tiempo_disparando = 1
 
-
-
-
-
 	eliminar.init(self,"enemigos")
 
 end
@@ -95,7 +91,7 @@ function enemigo:draw()
 
 	love.graphics.draw(self.img,self.spritesheet[self.iterator_quad],self.ox,self.oy,self.radio,self.spritesheet.scale,self.spritesheet.scale,w/2,h/2)
 
-	love.graphics.print(self.estados.current,self.ox,self.oy-100)
+	--love.graphics.print(self.estados.current,self.ox,self.oy-100)
 end
 
 function enemigo:update(dt)
@@ -141,6 +137,7 @@ function enemigo:update(dt)
 	self.ox,self.oy=self.body:getX(),self.body:getY()
 
 	if self.hp<1 then
+		self.entidad.score=self.entidad.score+1
         self:remover()
     end
 end
@@ -172,6 +169,15 @@ function enemigo:angulo_aleatorio(dt)
 end
 
 function enemigo:crear_balas()
+	local disparo_sonido = self.entidad.sonidos_todos.canon
+
+	if disparo_sonido:isPlaying() then 
+		disparo_sonido:stop() 
+		disparo_sonido:play() 
+	else 
+		disparo_sonido:play() 
+	end
+	
 	Bala(self.entidad,self.ox,self.oy,self.radio,self.creador)
 end
 

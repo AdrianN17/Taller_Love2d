@@ -1,10 +1,14 @@
 Gamestate =  require "libs.hump.gamestate"
 
 Juego = require "entidades.juego"
+Menu = require "escenas.menu"
 
 function love.load()
+	love.graphics.setNewFont("assets/font/lunchds.ttf", 20)
+
+	
 	Gamestate.registerEvents()
-  	Gamestate.switch(Juego)
+  	Gamestate.switch(Menu)
 end
 
 

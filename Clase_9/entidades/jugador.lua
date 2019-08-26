@@ -118,6 +118,7 @@ function jugador:update(dt)
 	self.ox,self.oy=self.body:getX(),self.body:getY()
 
 	if self.hp<1 then
+		self.entidad:guardar_score()
         self:remover()
     end
 end
@@ -173,6 +174,15 @@ function jugador:get_radio()
 end
 
 function jugador:crear_balas()
+	local disparo_sonido = self.entidad.sonidos_todos.canon
+
+	if disparo_sonido:isPlaying() then 
+		disparo_sonido:stop() 
+		disparo_sonido:play() 
+	else 
+		disparo_sonido:play() 
+	end
+
 
 	for _, punto in ipairs(self.puntos) do
 		local shape = punto.fixture:getShape()
